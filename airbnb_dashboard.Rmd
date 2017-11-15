@@ -1,11 +1,13 @@
 ---
-title: "plotly"
-author: "MeOak Place"
-date: "November 15, 2017"
-output: html_document
+title: "Airbnb Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
 ---
 
-```{r echo = FALSE, results = FALSE, message = FALSE, warning = FALSE}
+```{r echo = FALSE, include = FALSE, message = FALSE, results = FALSE, warning = FALSE}
+library(flexdashboard)
 library(tidyverse)
 library(tidytext)
 library(curl)
@@ -32,13 +34,8 @@ library(stringr)
 library(tools)
 library(viridisLite)
 library(viridis)
-
-
-devtools::install_github('hadley/ggplot2')
-
-
-knitr::opts_chunk$set(echo = TRUE)
 ```
+
 
 ```{r echo = FALSE, message = FALSE, results = FALSE, warning = FALSE}
 set.seed(1)
@@ -54,11 +51,21 @@ airbnb_data = read_csv("./data/nyc_airbnb.csv") %>%
          price %in% 100:500)  %>% 
   sample_n(5000)
 
+common_neighborhoods =
+  airbnb_data %>% 
+  count(neighbourhood, sort = TRUE) %>% 
+  top_n(8) %>% 
+  select(neighbourhood)
 #filtered to keep sample manageable for plotly
 #can also code price > 100 & price < 400
 ```
 
-Plotly Scatterplot
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Scatterplot
+
 ```{r echo = FALSE, message = FALSE, results = TRUE, warning = FALSE}
 airbnb_data %>%
   mutate(text_label = str_c("Price: $", price, '\nRating: ', rating)) %>% 
@@ -68,15 +75,13 @@ airbnb_data %>%
           text = ~text_label)
 ```
 
-Plotly Boxplot
-```{r echo = FALSE, message = FALSE, results = TRUE, warning = FALSE}
-common_neighborhoods =
-  airbnb_data %>% 
-  count(neighbourhood, sort = TRUE) %>% 
-  top_n(8) %>% 
-  select(neighbourhood)
-## Selecting by n
 
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Boxplot
+
+```{r echo = FALSE, message = FALSE, results = TRUE, warning = FALSE}
 inner_join(airbnb_data, common_neighborhoods,
              by = "neighbourhood") %>% 
   mutate(neighbourhood = fct_reorder(neighbourhood, price)) %>% #orders according to highest median price
@@ -84,50 +89,12 @@ inner_join(airbnb_data, common_neighborhoods,
           colors = "Set2")
 ```
 
-Plotly Barchart
+### Barchart
+
 ```{r echo = FALSE, message = FALSE, results = TRUE, warning = FALSE}
 airbnb_data %>% 
   count(neighbourhood) %>% 
   mutate(neighbourhood = fct_reorder(neighbourhood, n)) %>% 
   plot_ly(x = ~neighbourhood, y = ~n, color = ~neighbourhood, type = "bar")
-## Warning in RColorBrewer::brewer.pal(N, "Set2"): n too large, allowed maximum for palette Set2 is 8
-## Returning the palette you asked for with that many colors
-```
-
-Using ggplotly
-```{r echo = FALSE, message = FALSE, results = TRUE, warning = FALSE}
-scatter_ggplot = airbnb_data %>%
-  ggplot(aes(x = longitude, y = latitude, color = price)) +
-  geom_point(alpha = 0.25) +
-  scale_color_viridis() +
-  coord_cartesian() +
-  theme_classic()
-
-ggplotly(scatter_ggplot)
-## Warning: We recommend that you use the dev version of ggplot2 with `ggplotly()`
-## Install it with: `devtools::install_github('hadley/ggplot2')`
-```
-
-
-```{r echo = FALSE, message = FALSE, results = TRUE, warning = FALSE}
-box_ggplot = 
-  inner_join(airbnb_data, common_neighborhoods,
-             by = "neighbourhood") %>% 
-  mutate(neighbourhood = fct_reorder(neighbourhood, price)) %>% 
-  ggplot(aes(x = neighbourhood, y = price, fill = neighbourhood)) +
-  geom_boxplot() +
-  theme_classic() + 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-ggplotly(box_ggplot)
-```
-
-
-flexdashboard
-```{r}
-library(flexdashboard)
-
-#1000 so 650 ~ 2/3 of width etc
-
 ```
 
