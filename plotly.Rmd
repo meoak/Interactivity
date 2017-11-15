@@ -5,7 +5,7 @@ date: "November 15, 2017"
 output: html_document
 ---
 
-```{r load_packages, warning = FALSE, message = FALSE}
+```{r echo = FALSE, results = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(tidytext)
 library(curl)
@@ -35,7 +35,7 @@ library(viridis)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r echo = FALSE, message = FALSE, results = FALSE, warning = FALSE}
 set.seed(1)
 
 airbnb_data = read_csv("./data/nyc_airbnb.csv") %>%
@@ -48,9 +48,13 @@ airbnb_data = read_csv("./data/nyc_airbnb.csv") %>%
          room_type == "Entire home/apt",
          price %in% 100:500)  %>% 
   sample_n(5000)
+
+#filtered to keep sample manageable for plotly
+#can also code price > 100 & price < 400
 ```
 
-```{r}
+Plotly Scatterplot
+```{r echo = FALSE, message = FALSE, results = TRUE, warning = FALSE}
 airbnb_data %>%
   mutate(text_label = str_c("Price: $", price, '\nRating: ', rating)) %>% 
   plot_ly(x = ~longitude, y = ~latitude, type = "scatter", mode = "markers",
