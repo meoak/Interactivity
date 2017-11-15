@@ -1,0 +1,52 @@
+---
+title: "plotly"
+author: "MeOak Place"
+date: "November 15, 2017"
+output: html_document
+---
+
+```{r load_packages, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(tidytext)
+library(curl)
+library(data.table)
+library(dplyr)
+library(DT)
+library(forcats)
+library(ggplot2)
+library(ggridges)
+library(ggthemes)
+library(haven)
+library(htmltools)
+library(httr)
+library(janitor)
+library(jsonlite)
+library(knitr)
+library(magrittr)
+library(plotly)
+library(readr)
+library(readxl)
+library(reshape2)
+library(rvest)
+library(stringr)
+library(tools)
+library(viridisLite)
+library(viridis)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+set.seed(1)
+
+airbnb_data = read_csv("./data/nyc_airbnb.csv") %>%
+  clean_names() %>%
+  mutate(rating = review_scores_location / 2) %>%
+  select(boro = neighbourhood_group, neighbourhood, rating, price, room_type,
+         latitude, longitude) %>%
+  filter(!is.na(rating), 
+         boro == "Manhattan",
+         room_type == "Entire home/apt",
+         price %in% 100:500)  %>% 
+  sample_n(5000)
+```
+
